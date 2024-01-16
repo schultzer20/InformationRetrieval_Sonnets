@@ -48,7 +48,7 @@ class Document:
             if len(lines) == 1:
                 return lines
             else:
-                title = lines[0]
+                title = lines[0]  # I thought we have to differentiate between title and content at some point that's why I divided them
                 lines = lines[1:]
                 return [title, *lines]
         elif isinstance(self.text, list):
@@ -64,8 +64,8 @@ class Document:
             line_words = (line.translate(table).lower().split())
             words_lists.append(line_words)  # list of 2 lists (one list with title words + second list with line words)
 
-        title_words = words_lists[0] if words_lists else []  # access list with title words # handle case where there's no title
-        line_words = words_lists[1] if len(words_lists) > 1 else [] # access list of line words # handle case where there's no line
+        title_words = words_lists[0] if words_lists else []  # access list with title words & handle case where there's no title
+        line_words = words_lists[1] if len(words_lists) > 1 else [] # access list of line words & handle case where there's no line
 
         # Create an instance of the stemmer
         stemmer = PorterStemmer()
@@ -92,12 +92,10 @@ class Sonnet(Document):
         super().__init__(title + "\n" + lines)
         self.id = int(title_split[0].replace("Sonnet", "").strip())
         self.title = title
-        #self.lines = sonnet_dictionary["lines"]
 
     def __repr__(self) -> str:
         title, *lines = self.get_lines()
         only_lines = "\n".join(lines)
-        #without_title = line_by_line[:]
         return f"\nSonnet {self.id}:{title}\n{only_lines}"
 
     def __str__(self):
@@ -108,7 +106,7 @@ instances_list = [Sonnet(sonnet_dictionary) for sonnet_dictionary in sonnets]
 print(type(instances_list))  # a list
 print(type(instances_list[0]))  # a Sonnet
 print(instances_list)  # prints all sonnets like defined in the __repr__
-print(instances_list[0])
+print(instances_list[0])  # prints first sonnet
 
 # a sonnet
 #tokenized_sonnet = instances_list[31].tokenize()
@@ -131,9 +129,6 @@ class Index(dict[str, set[int]]):  # is a dict that uses str as key (stem) and a
 
     def add(self, document: Sonnet):
         title_stems, lines_stems = document.tokenize()  # get list of stems
-        #title_stems = tuple(title_stems)
-        #lines_stems = tuple(lines_stems)
-
         for stem in title_stems:  # iterate over stemmed words
             if stem not in self:  # if stem not already in self
                 self[stem] = set()  # create key-value pair --> key == stem
@@ -151,7 +146,7 @@ class Index(dict[str, set[int]]):  # is a dict that uses str as key (stem) and a
         for word in query_stems[0]:
             if word in self:
                 sonnet_ids.extend(self[word])  # sonnet_ids contains all sonnets with one of the input words
-        # if more than 1 query word --> we need
+        # if more than 1 query word --> we need that
         if num_of_stems >= 2:
             sonnet_id_counts = Counter(sonnet_ids)
             matches = [sonnet for sonnet in instances_list if all(sonnet_id_counts[sonnet.id] >= num_of_stems for word in query_stems[0])]
@@ -183,5 +178,3 @@ for match in matching_sonnets:
     match_lines = sonnets[match.id - 1]['lines']
     for match_line in match_lines:
         print("   ", match_line)
-
-
